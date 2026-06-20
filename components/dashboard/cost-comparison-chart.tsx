@@ -27,7 +27,7 @@ export function CostComparisonChart({ data }: CostComparisonChartProps) {
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
                 contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
-                formatter={(value: number) => `₹${value.toLocaleString()}`}
+                formatter={(value: any) => `₹${Number(value || 0).toLocaleString()}`}
               />
               <Legend />
               <Bar dataKey="fuel" name="Fuel Cost" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />

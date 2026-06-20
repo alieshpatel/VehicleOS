@@ -1,13 +1,21 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wrench, Fuel, FileText, Bell, Stethoscope } from "lucide-react";
+import { Wrench, Fuel, FileText, Bell, Stethoscope, Download } from "lucide-react";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface VehicleDetailTabsProps {
   vehicleId: string;
+  services: any[];
+  fuelLogs: any[];
+  documents: any[];
+  reminders: any[];
+  aiReports: any[];
 }
 
-export function VehicleDetailTabs({ vehicleId }: VehicleDetailTabsProps) {
+export function VehicleDetailTabs({ vehicleId, services, fuelLogs, documents, reminders, aiReports }: VehicleDetailTabsProps) {
   return (
     <Tabs defaultValue="services" className="w-full">
       <div className="overflow-x-auto pb-2">
@@ -37,31 +45,111 @@ export function VehicleDetailTabs({ vehicleId }: VehicleDetailTabsProps) {
 
       <TabsContent value="services" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <p className="text-muted-foreground">Services list will go here.</p>
+          {services.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No service records found.</p>
+          ) : (
+            <div className="space-y-4">
+              {services.map(s => (
+                <div key={s.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                  <div>
+                    <p className="font-medium">{s.serviceType}</p>
+                    <p className="text-sm text-muted-foreground">{format(new Date(s.serviceDate), "MMM d, yyyy")} • {s.serviceCenter}</p>
+                  </div>
+                  <p className="font-semibold">₹{s.cost}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </TabsContent>
 
       <TabsContent value="fuel" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <p className="text-muted-foreground">Fuel logs will go here.</p>
+          {fuelLogs.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No fuel logs found.</p>
+          ) : (
+            <div className="space-y-4">
+              {fuelLogs.map(f => (
+                <div key={f.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                  <div>
+                    <p className="font-medium">{f.litres} Litres at {f.odometer} km</p>
+                    <p className="text-sm text-muted-foreground">{format(new Date(f.date), "MMM d, yyyy")}</p>
+                  </div>
+                  <p className="font-semibold">₹{f.amount}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </TabsContent>
 
       <TabsContent value="documents" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <p className="text-muted-foreground">Documents will go here.</p>
+          {documents.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No documents found.</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {documents.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{doc.fileName}</p>
+                    <Badge variant="outline" className="text-[10px]">{doc.documentType}</Badge>
+                  </div>
+                  <Button variant="ghost" size="icon" asChild>
+                    <a href={doc.fileUrl} target="_blank" rel="noreferrer">
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </TabsContent>
 
       <TabsContent value="reminders" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <p className="text-muted-foreground">Reminders will go here.</p>
+          {reminders.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No reminders found.</p>
+          ) : (
+            <div className="space-y-4">
+              {reminders.map(r => (
+                <div key={r.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                  <div>
+                    <p className="font-medium">{r.title}</p>
+                    <p className="text-sm text-muted-foreground">Due: {format(new Date(r.dueDate), "MMM d, yyyy")}</p>
+                  </div>
+                  <Badge variant={r.status === "overdue" ? "destructive" : "secondary"}>
+                    {r.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </TabsContent>
 
       <TabsContent value="ai-diagnosis" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <p className="text-muted-foreground">AI Diagnosis history will go here.</p>
+          {aiReports.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No diagnosis history found.</p>
+          ) : (
+            <div className="space-y-6">
+              {aiReports.map(report => (
+                <div key={report.id} className="border-b pb-4 last:border-0">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {format(new Date(report.createdAt), "MMM d, yyyy")}
+                  </p>
+                  <p className="font-medium mb-2">Symptoms: "{report.symptoms}"</p>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm font-semibold text-primary">Diagnosis: {report.diagnosis.recommendation}</p>
+                    <p className="text-sm mt-1">Est. Cost: ₹{report.diagnosis.estimatedCostMin} - ₹{report.diagnosis.estimatedCostMax}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </TabsContent>
     </Tabs>
