@@ -17,9 +17,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+type FuelType = "petrol" | "diesel" | "cng" | "electric" | "hybrid";
+
 export default function AddVehiclePage() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  // Select's value is held in React state — Radix's Select does not emit a
+  // native form field, so reading it via FormData.get("fuelType") would always
+  // return null. See onValueChange on the Select below.
+  const [fuelType, setFuelType] = useState<FuelType>("petrol");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,7 +38,7 @@ export default function AddVehiclePage() {
         brand: formData.get("brand") as string,
         model: formData.get("model") as string,
         year: parseInt(formData.get("year") as string),
-        fuelType: formData.get("fuelType") as "petrol" | "diesel" | "cng" | "electric" | "hybrid",
+        fuelType,
         mileage: parseInt(formData.get("mileage") as string),
       };
 
@@ -90,7 +96,7 @@ export default function AddVehiclePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="fuelType">Fuel Type</Label>
-                <Select name="fuelType" required defaultValue="petrol">
+                <Select value={fuelType} onValueChange={(v) => setFuelType(v as FuelType)}>
                   <SelectTrigger id="fuelType">
                     <SelectValue placeholder="Select fuel type" />
                   </SelectTrigger>

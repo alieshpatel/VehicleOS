@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { Vehicle } from "@/db/schema";
 
 // Static service center suggestions
 const COMMON_SERVICE_CENTERS = [
@@ -30,10 +31,25 @@ const COMMON_SERVICE_CENTERS = [
   "Local Independent Garage"
 ];
 
+const SERVICE_TYPES = [
+  "Regular Maintenance",
+  "Oil Change",
+  "Tyre Replacement/Rotation",
+  "Brake Service",
+  "Battery Replacement",
+  "AC Service",
+  "Major Repair",
+  "Other",
+] as const;
+
 export default function AddServicePage() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
-  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  // Both Selects below are Radix components — they don't participate in native
+  // FormData, so their values are held in React state and merged in on submit.
+  const [vehicleId, setVehicleId] = useState("");
+  const [serviceType, setServiceType] = useState<string>("");
 
   useEffect(() => {
     async function load() {
@@ -45,31 +61,36 @@ export default function AddServicePage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (!vehicleId) {
+      toast.error("Please select a vehicle");
+      return;
+    }
+    if (!serviceType) {
+      toast.error("Please select a service type");
+      return;
+    }
+
     setIsPending(true);
 
     try {
       const formData = new FormData(e.currentTarget);
       const data = {
-        vehicleId: formData.get("vehicleId") as string,
+        vehicleId,
         serviceDate: formData.get("serviceDate") as string,
-        serviceType: formData.get("serviceType") as string,
+        serviceType,
         cost: parseInt(formData.get("cost") as string),
-        serviceCenter: formData.get("serviceCenter") as string,
-        notes: formData.get("notes") as string,
+        serviceCenter: (formData.get("serviceCenter") as string) || undefined,
+        notes: (formData.get("notes") as string) || undefined,
       };
-
-      if (!data.vehicleId) {
-        toast.error("Please select a vehicle");
-        setIsPending(false);
-        return;
-      }
 
       await addService(data);
       toast.success("Service record added successfully!");
       router.push("/services");
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error(error.message || "Failed to add service record. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to add service record. Please try again.";
+      toast.error(message);
       setIsPending(false);
     }
   }
@@ -88,7 +109,7 @@ export default function AddServicePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="vehicleId">Vehicle</Label>
-                <Select name="vehicleId" required>
+                <Select value={vehicleId} onValueChange={setVehicleId}>
                   <SelectTrigger id="vehicleId">
                     <SelectValue placeholder="Select vehicle" />
                   </SelectTrigger>
@@ -115,19 +136,16 @@ export default function AddServicePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="serviceType">Service Type</Label>
-                <Select name="serviceType" required>
+                <Select value={serviceType} onValueChange={setServiceType}>
                   <SelectTrigger id="serviceType">
                     <SelectValue placeholder="e.g. Regular Maintenance" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Regular Maintenance">Regular Maintenance</SelectItem>
-                    <SelectItem value="Oil Change">Oil Change</SelectItem>
-                    <SelectItem value="Tyre Replacement/Rotation">Tyre Replacement/Rotation</SelectItem>
-                    <SelectItem value="Brake Service">Brake Service</SelectItem>
-                    <SelectItem value="Battery Replacement">Battery Replacement</SelectItem>
-                    <SelectItem value="AC Service">AC Service</SelectItem>
-                    <SelectItem value="Major Repair">Major Repair</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {SERVICE_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

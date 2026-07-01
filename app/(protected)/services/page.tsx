@@ -1,6 +1,7 @@
 import { getServices } from "@/actions/services";
 import { Button } from "@/components/ui/button";
 import { Plus, Wrench, Download } from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -30,9 +31,11 @@ export default async function ServicesPage() {
               Export CSV
             </a>
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Service
+          <Button asChild>
+            <Link href="/services/add">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Service
+            </Link>
           </Button>
         </div>
       </div>
@@ -47,9 +50,11 @@ export default async function ServicesPage() {
             <p className="text-sm text-muted-foreground max-w-sm mt-2">
               Keep track of maintenance, repairs, and part replacements by adding a service record.
             </p>
-            <Button className="mt-4">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Service
+            <Button className="mt-4" asChild>
+              <Link href="/services/add">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Service
+              </Link>
             </Button>
           </div>
         ) : (
