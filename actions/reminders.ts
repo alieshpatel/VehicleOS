@@ -28,8 +28,28 @@ function computeStatus(dueDate: string, completed: boolean): ReminderStatus {
   return "scheduled";
 }
 
-export async function getReminders(): Promise<ReminderWithStatus[]> {
+export async function getReminders(vehicleId?: string): Promise<ReminderWithStatus[]> {
   const user = await getCurrentUser();
+
+  if (vehicleId) {
+    const vehicle = await db
+      .select()
+      .from(vehicles)
+      .where(and(eq(vehicles.id, vehicleId), eq(vehicles.userId, user.id)))
+      .limit(1);
+    if (!vehicle.length) return [];
+
+    const rows = await db
+      .select()
+      .from(reminders)
+      .where(eq(reminders.vehicleId, vehicleId));
+
+    return rows.map((r) => ({
+      ...r,
+      status: computeStatus(r.dueDate, r.completed),
+    }));
+  }
+
   const userVehicles = await db
     .select({ id: vehicles.id })
     .from(vehicles)
