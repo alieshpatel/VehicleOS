@@ -2,34 +2,94 @@
 
 import { useState, useEffect } from "react";
 import { UploadButton } from "@/lib/uploadthing";
-import { getDocuments } from "@/actions/documents";
+import { getDocuments, addDocument, deleteDocument } from "@/actions/documents";
+import { getVehicles } from "@/actions/vehicles";
 import { Button } from "@/components/ui/button";
-import { FileText, Trash2, Download } from "lucide-react";
+import { FileText, Trash2, Download, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const [pendingFile, setPendingFile] = useState<{ url: string; name: string } | null>(null);
+  const [vehicleId, setVehicleId] = useState("");
+  const [documentType, setDocumentType] = useState<"RC" | "Insurance" | "PUC" | "ServiceBill">("RC");
+  const [isSaving, setIsSaving] = useState(false);
 
   // In a real implementation, this would be a Server Component that passes data down,
   // but to use the UploadThing client component easily alongside dynamic data updates,
   // we'll fetch on mount.
-  useEffect(() => {
-    async function load() {
-      try {
-        const docs = await getDocuments();
-        setDocuments(docs);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+  async function load() {
+    try {
+      const docs = await getDocuments();
+      setDocuments(docs);
+      const v = await getVehicles();
+      setVehicles(v);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
   }, []);
+
+  async function handleSaveDocument(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pendingFile || !vehicleId || !documentType) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await addDocument({
+        vehicleId,
+        fileUrl: pendingFile.url,
+        fileName: pendingFile.name,
+        documentType
+      });
+      toast.success("Document saved successfully!");
+      setPendingFile(null);
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save document");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this document?")) return;
+    try {
+      await deleteDocument(id);
+      toast.success("Document deleted");
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete document");
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,12 +104,9 @@ export default function DocumentsPage() {
           <UploadButton
             endpoint="documentUploader"
             onClientUploadComplete={(res) => {
-              // This is a simplified version. In a full implementation, you'd 
-              // open a dialog here to ask which vehicle and what document type it is,
-              // then call the addDocument action.
-              toast.success("Upload complete!");
-              // Refresh page or update state
-              window.location.reload();
+              if (res && res.length > 0) {
+                setPendingFile({ url: res[0].url, name: res[0].name });
+              }
             }}
             onUploadError={(error: Error) => {
               toast.error(`ERROR! ${error.message}`);
@@ -58,6 +115,60 @@ export default function DocumentsPage() {
           />
         </div>
       </div>
+
+      <Dialog open={!!pendingFile} onOpenChange={(open) => !open && setPendingFile(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Categorize Document</DialogTitle>
+            <DialogDescription>
+              File uploaded! Please select which vehicle and document type this belongs to.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSaveDocument} className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <Label>Selected File</Label>
+              <div className="p-2 border rounded bg-muted text-sm truncate">
+                {pendingFile?.name}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Vehicle</Label>
+              <Select value={vehicleId} onValueChange={setVehicleId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select vehicle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vehicles.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.brand} {v.model} ({v.vehicleNumber})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Document Type</Label>
+              <Select value={documentType} onValueChange={(v: any) => setDocumentType(v)} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="RC">RC Book</SelectItem>
+                  <SelectItem value="Insurance">Insurance</SelectItem>
+                  <SelectItem value="PUC">PUC</SelectItem>
+                  <SelectItem value="ServiceBill">Service Bill</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Document
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <div className="flex items-center justify-center min-h-[300px]">
@@ -98,7 +209,7 @@ export default function DocumentsPage() {
                       <Download className="h-4 w-4" />
                     </a>
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(doc.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

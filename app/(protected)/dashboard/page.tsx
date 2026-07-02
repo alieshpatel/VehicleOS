@@ -1,6 +1,7 @@
 import {
   getDashboardStats,
   getMonthlyMaintenanceCosts,
+  getVehicleCostComparison,
 } from "@/actions/dashboard";
 import { getMonthlyFuelExpenses } from "@/actions/fuel-logs";
 import { getCurrentUser } from "@/actions/users";
@@ -158,6 +159,8 @@ export default async function DashboardPage() {
             </div>
           </Card>
         </div>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mt-6">
         <div className="lg:col-span-7">
           <CostComparisonChart data={costComparison} />
