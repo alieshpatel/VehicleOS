@@ -1,4 +1,9 @@
 import { getVehicle } from "@/actions/vehicles";
+import { getServices } from "@/actions/services";
+import { getFuelLogs } from "@/actions/fuel-logs";
+import { getDocuments } from "@/actions/documents";
+import { getReminders } from "@/actions/reminders";
+import { getDiagnosisHistory } from "@/actions/ai-diagnosis";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
@@ -10,7 +15,15 @@ export default async function VehicleDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const params = await props.params;
-  const vehicle = await getVehicle(params.id);
+  const vehicleId = params.id;
+  const [vehicle, services, fuelLogs, documents, reminders, aiReports] = await Promise.all([
+    getVehicle(vehicleId),
+    getServices(vehicleId),
+    getFuelLogs(vehicleId),
+    getDocuments(vehicleId),
+    getReminders(vehicleId),
+    getDiagnosisHistory(vehicleId)
+  ]);
 
   if (!vehicle) {
     notFound();
@@ -53,7 +66,14 @@ export default async function VehicleDetailPage(props: {
         </div>
       </div>
 
-      <VehicleDetailTabs vehicleId={vehicle.id} />
+      <VehicleDetailTabs 
+        vehicleId={vehicle.id} 
+        services={services}
+        fuelLogs={fuelLogs}
+        documents={documents}
+        reminders={reminders}
+        aiReports={aiReports}
+      />
     </div>
   );
 }
