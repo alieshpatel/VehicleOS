@@ -16,6 +16,16 @@ interface VehicleDetailTabsProps {
 }
 
 export function VehicleDetailTabs({ vehicleId, services, fuelLogs, documents, reminders, aiReports }: VehicleDetailTabsProps) {
+  let averageMileage = null;
+  if (fuelLogs && fuelLogs.length > 1) {
+    const sortedLogs = [...fuelLogs].sort((a, b) => a.odometer - b.odometer);
+    const totalDistance = sortedLogs[sortedLogs.length - 1].odometer - sortedLogs[0].odometer;
+    const totalFuel = sortedLogs.slice(1).reduce((acc, log) => acc + Number(log.litres), 0);
+    if (totalFuel > 0 && totalDistance > 0) {
+      averageMileage = (totalDistance / totalFuel).toFixed(2);
+    }
+  }
+
   return (
     <Tabs defaultValue="services" className="w-full">
       <div className="overflow-x-auto pb-2">
@@ -65,6 +75,17 @@ export function VehicleDetailTabs({ vehicleId, services, fuelLogs, documents, re
 
       <TabsContent value="fuel" className="mt-6">
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
+          {averageMileage && (
+            <div className="mb-6 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-4">
+              <div className="bg-emerald-500/20 p-3 rounded-full">
+                <Fuel className="h-6 w-6 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground font-medium">Average Mileage</p>
+                <p className="text-2xl font-bold text-emerald-500">{averageMileage} <span className="text-base font-normal text-emerald-500/70">km/l</span></p>
+              </div>
+            </div>
+          )}
           {fuelLogs.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">No fuel logs found.</p>
           ) : (
