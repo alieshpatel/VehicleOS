@@ -43,7 +43,9 @@ Provide a diagnosis in JSON format with these exact fields:
 
 Respond ONLY with valid JSON, no markdown formatting or code blocks.`;
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  // Note: gemini-2.0-flash was retired by Google on June 1, 2026.
+  // gemini-2.5-flash is the current stable, free-tier-eligible replacement.
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
