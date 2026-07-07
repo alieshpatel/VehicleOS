@@ -9,8 +9,9 @@ import { getUpcomingReminders } from "@/actions/reminders";
 import { FuelChart } from "@/components/dashboard/fuel-chart";
 import { MaintenanceChart } from "@/components/dashboard/maintenance-chart";
 import { CostComparisonChart } from "@/components/dashboard/cost-comparison-chart";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Wrench, Fuel, Bell, ArrowRight } from "lucide-react";
+import { Bell, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -28,81 +29,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {user.name.split(" ")[0]}. Here's an overview of your vehicles.
+      {/* Page header with gradient accent */}
+      <div className="relative">
+        <div className="absolute -top-6 -left-6 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+        <h1 className="text-3xl font-bold tracking-tight relative">
+          Dashboard
+        </h1>
+        <p className="text-muted-foreground relative">
+          Welcome back, {user.name.split(" ")[0]}. Here&apos;s your vehicle overview.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-primary/10 shadow-sm bg-gradient-to-br from-background to-muted/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Vehicles
-            </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Car className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalVehicles}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Registered in your garage
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-primary/10 shadow-sm bg-gradient-to-br from-background to-muted/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Upcoming Services
-            </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Wrench className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.upcomingServices}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Logged maintenance records
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-primary/10 shadow-sm bg-gradient-to-br from-background to-muted/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Fuel Expenses (This Month)
-            </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Fuel className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              ₹{stats.fuelExpensesThisMonth.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Across all vehicles
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-primary/10 shadow-sm bg-gradient-to-br from-background to-muted/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Reminders
-            </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bell className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.activeReminders}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Pending tasks
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Animated stat cards — client component */}
+      <DashboardStats stats={stats} />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <div className="lg:col-span-5 grid gap-6 md:grid-cols-2">
@@ -110,29 +49,33 @@ export default async function DashboardPage() {
           <MaintenanceChart data={maintenanceData} />
         </div>
         <div className="lg:col-span-2">
-          <Card className="h-full border-primary/10 shadow-sm flex flex-col">
+          <Card className="h-full border-border/50 shadow-sm flex flex-col bg-gradient-to-br from-background to-muted/10">
             <CardHeader>
-              <CardTitle>Priority Reminders</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-amber-500" />
+                Priority Reminders
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto">
               {upcomingReminders.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                    <Bell className="h-6 w-6 text-muted-foreground opacity-50" />
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-emerald-500/10 to-teal-500/10 flex items-center justify-center mb-3 border border-emerald-500/20">
+                    <Bell className="h-6 w-6 text-emerald-500/50" />
                   </div>
-                  <p className="text-sm text-muted-foreground">You're all caught up!</p>
+                  <p className="text-sm font-medium text-foreground">All caught up!</p>
+                  <p className="text-xs text-muted-foreground mt-1">No upcoming reminders</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {upcomingReminders.map((reminder) => (
                     <div
                       key={reminder.id}
-                      className="flex items-center gap-3 border-b pb-3 last:border-0 last:pb-0"
+                      className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors duration-200"
                     >
                       <div
-                        className={`h-2 w-2 rounded-full ${
+                        className={`h-2.5 w-2.5 rounded-full shrink-0 ${
                           reminder.status === "overdue"
-                            ? "bg-destructive"
+                            ? "bg-red-500 animate-pulse"
                             : "bg-amber-500"
                         }`}
                       />
@@ -150,7 +93,7 @@ export default async function DashboardPage() {
               )}
             </CardContent>
             <div className="p-4 pt-0 mt-auto">
-              <Button variant="outline" className="w-full text-xs h-8" asChild>
+              <Button variant="outline" className="w-full text-xs h-8 border-border/50" asChild>
                 <Link href="/reminders">
                   View All Reminders
                   <ArrowRight className="ml-2 h-3 w-3" />
@@ -161,7 +104,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mt-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mt-2">
         <div className="lg:col-span-7">
           <CostComparisonChart data={costComparison} />
         </div>

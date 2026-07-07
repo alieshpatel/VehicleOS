@@ -1,9 +1,9 @@
 "use server";
 
 import { db } from "@/db";
-import { vehicles } from "@/db/schema";
+import { vehicles, fuelLogs } from "@/db/schema";
 import { getCurrentUser } from "@/actions/users";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getVehicles(search?: string, fuelType?: string) {
@@ -29,7 +29,34 @@ export async function getVehicles(search?: string, fuelType?: string) {
         v.vehicleNumber.toLowerCase().includes(s)
     );
   }
-  return filtered;
+
+  // Calculate average mileage for each vehicle
+  const vehiclesWithStats = await Promise.all(
+    filtered.map(async (v) => {
+      const logs = await db
+        .select()
+        .from(fuelLogs)
+        .where(eq(fuelLogs.vehicleId, v.id))
+        .orderBy(desc(fuelLogs.date));
+      
+      let avgMileage = 0;
+      if (logs.length >= 2) {
+        const totalDistance = logs[0].odometer - logs[logs.length - 1].odometer;
+        // The fuel consumed for this distance is the sum of all logs EXCEPT the last one
+        // (since the last fill-up is what covers the subsequent distance, not the previous)
+        // Wait, standard full-tank method: sum of litres of all logs except the FIRST log (chronologically, which is the last in desc order)
+        const totalFuel = logs.slice(0, logs.length - 1).reduce((sum, log) => sum + log.litres, 0);
+        
+        if (totalFuel > 0 && totalDistance > 0) {
+          avgMileage = parseFloat((totalDistance / totalFuel).toFixed(1));
+        }
+      }
+
+      return { ...v, avgMileage };
+    })
+  );
+
+  return vehiclesWithStats;
 }
 
 export async function getVehicle(id: string) {

@@ -120,3 +120,137 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Custom animations for landing page ── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Background & Decorative ── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-20px) translateX(10px); }
+  50% { transform: translateY(-10px) translateX(-10px); }
+  75% { transform: translateY(-25px) translateX(5px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes grid-line-1 {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes grid-line-2 {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes grid-line-3 {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Car Lighting Animations ── */
+
+@keyframes headlight-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes taillight-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* ── Ambient Background Movement ── */
+
+@keyframes ambient-1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -20px); }
+  66% { transform: translate(-20px, 10px); }
+}
+
+@keyframes ambient-2 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-25px, 15px); }
+  66% { transform: translate(15px, -25px); }
+}
+
+/* ── Floating HUD Elements ── */
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-slow-reverse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* ── Connect Car Section ── */
+
+@keyframes scan-line {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes connection-ring {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.15; }
+  100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.4; }
+}
+
+@keyframes connection-ring-slow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.05; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+}
+
+/* ── Typing Cursor Blink ── */
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Utility classes ── */
+
+.animate-gradient-shift {
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+.animate-grid-line-1 { animation: grid-line-1 4s ease-in-out infinite; }
+.animate-grid-line-2 { animation: grid-line-2 5s ease-in-out infinite 1s; }
+.animate-grid-line-3 { animation: grid-line-3 6s ease-in-out infinite 2s; }
+
+.animate-headlight-pulse { animation: headlight-pulse 3s ease-in-out infinite; }
+.animate-taillight-pulse { animation: taillight-pulse 3.5s ease-in-out infinite 0.5s; }
+
+.animate-ambient-1 { animation: ambient-1 12s ease-in-out infinite; }
+.animate-ambient-2 { animation: ambient-2 15s ease-in-out infinite 3s; }
+
+.animate-float-slow { animation: float-slow 4s ease-in-out infinite; }
+.animate-float-slow-reverse { animation: float-slow-reverse 5s ease-in-out infinite 1s; }
+
+.animate-scan-line { animation: scan-line 2.5s ease-in-out infinite; }
+.animate-connection-ring { animation: connection-ring 3s ease-in-out infinite; }
+.animate-connection-ring-slow { animation: connection-ring-slow 4s ease-in-out infinite 1s; }
+
+.animate-blink { animation: blink 1s step-end infinite; }
+
+/* ── Smooth transitions for duration values Tailwind may not cover ── */
+
+.duration-1500 {
+  transition-duration: 1500ms;
+}
+
